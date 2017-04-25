@@ -1,0 +1,70 @@
+############################ vboxdrv.ko build
+http://www.linuxdiyf.com/linux/15934.html
+
+############################ Ubuntu下使用adb和USB连接的方式进行Android设备调试
+1.  vi /etc/udev/rules.d/51-Android.rules 
+加入如下：
+SUBSYSTEM=="usb", ATTR{idVendor}=="xxxx1", ATTR{idProduct}=="xxxx2", MODE="0600" , OWNER=="xxxx3"
+其中，xxxx1与xxxx2是用 lsusb 来获取，xxxx3是ubuntu的登录名
+2. chmod a+rx /etc/udev/rules.d/51-android.rules
+3. vi ~/.android/adb_usb.ini 创建 adb_usb.ini，把刚才找到的设备的idVendor添加进去，如： 	0x22c0
+4. service udev restart
+5. adb kill-server && adb start-server
+
+
+
+
+############################ 定制android 的方法
+1. 改android　源码
+2. 在现有固件的基础上进行裁剪
+在原有的固件中，解包，比如说，system.img本质上就是一个ext4格式的文件系统映像文件，可以直接挂载: mount -o loop system.img /mnt
+这样，cd到/mnt中进行修改
+对system.img 扩容，dd if=/dev/zero bs=1M count=128 >> Image/system.img
+再扩展文件系统信息：
+e2fsck -f system.img
+resize2fs system.img
+要注意，如果变更了分区大小，记得在parameters文件分区也要作相应的修改
+echo $((0x88/8)) 可简单用作计算
+
+
+############################ 安卓system.img 两种格式 raw和sparse
+1. 一种是raw ext4 image，即经常说的raw image，其特点是完整的ext4分区镜像（包含很多全零的无效填充区），可以直接使用mount进行挂载。
+2. 另一种是sparse ext4 image，即经常说的simg。由于它将raw ext4进行稀疏描述，因此尺寸比较小（没有全零的无效填充区），所有只是一个dat文件，不能进行挂载
+android本身提供了源代码工具在两者之间转换，源代码位于：system/core/libsparse/simg2img.c
+
+############################ win7 开启nfs 客端
+1. 打开注册表编辑器，找到HKEY_LOCAL_MACHINE\SOFTWARE\Microsoft\ClientForNFS\CurrentVersion\Default，添加两个REG_DWORD值分别为AnonymousGid 和 AnonymousUid 为linux用户id
+2. mount -o anon mtype=soft lang=ansi \\192.168.159.128\home\celse\workspaces z:\
+(注意1：这里一定要用软装载模式（mtype=soft），因为NFS由于种种原因经常服务不可用如果硬装载就会导致资源管理器等停止响应
+注意2：这里不能用?utf-8)
+
+
+
+############################ 所谓解决一类问题的设计方法就叫做设计模式
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
